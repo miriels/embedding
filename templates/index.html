@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <style>
+        /* Add your CSS styles here */
+        gunicorn -w 4 -b 0.0.0.0:5000 your_app:app
+    </style>
+</head>
+<body>
+    <h1>Yuan Ze University</h1>
+    
+    <div class="chat-box">
+        {% for entry in chat_history %}
+            <div class="user-message">You: {{ entry.user }}</div>
+            <div class="assistant-message">Chatbot: {{ entry.assistant }}</div>
+        {% endfor %}
+    </div>
+    
+    <div id="chat-log"></div>
+
+    <div id="user-input-container">
+        <input type="text" id="user-input" placeholder="Enter your message..." autofocus>
+        <button id="send-button">Send</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatLog = document.getElementById('chat-log');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            
+            sendButton.addEventListener('click', function() {
+                const message = userInput.value;
+                if (message.trim() !== '') {
+                    chatLog.innerHTML += '<div class="user-message">You: ' + message + '</div>';
+                    userInput.value = '';
+                    scrollToBottom();
+                    getChatbotResponse(message);
+                }
+            });
+            
+            function getChatbotResponse(userMessage) {
+                fetch('/get_response', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        'user_input': userMessage
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    chatLog.innerHTML += '<div class="chatbot-message">Chatbot: ' + data.response + '</div>';
+                    scrollToBottom();
+                });
+            }
+            
+            function scrollToBottom() {
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
